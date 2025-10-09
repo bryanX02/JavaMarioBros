@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tp1.logic.gameobjects.ExitDoor;
+import tp1.logic.gameobjects.GameObject;
 import tp1.logic.gameobjects.Goomba;
 import tp1.logic.gameobjects.Land;
 import tp1.logic.gameobjects.Mario;
@@ -27,7 +28,71 @@ public class GameObjectContainer {
 	}
 	
 
+	// Funcion que devuelve el objeto de la lista que tenga la posici�n dada por par�metro
+	public GameObject getObjFromPos(Position pos) {
+		
+		// Variables
+		GameObject object = null;
+		boolean encontrado = false;
+		int i = 0;
+		
+		// Se busca el land en la posicion, si no lo encuentra se recibe un null
+		while (i < landList.size() && !encontrado) {
+			
+			if (landList.get(i).isOnPosition(pos))
+				encontrado = true;
+			else
+				i++;
+		}
+		
+		if (encontrado)
+			object = landList.get(i);
+		else {
+			
+			i=0;
+			while (i < goombaList.size() && !encontrado) {
+				
+				if (goombaList.get(i).isOnPosition(pos))
+					encontrado = true;
+				else
+					i++;
+			}
+			
+			if (encontrado)
+				object = goombaList.get(i);
+		}
+		
+		if (mario.isOnPosition(pos))
+			object = mario;
+		else if (exit.isOnPosition(pos))
+			object = exit;
+		
+		
+		
+		return object;
+		
+	}
 	
-	
+	// métodos sobrecargados que servirán para añadir los diferentes tipos de objeto al juego
+	public void add(Land land) {
+		
+		landList.add(land);
+		
+	}
+	public void add(Goomba goomba) {
+		
+		goombaList.add(goomba);
+		
+	}
+	public void add(ExitDoor exit) {
+		
+		this.exit = exit;
+		
+	}
+	public void add(Mario mario) {
+		
+		this.mario = mario;
+		
+	}
 
 }

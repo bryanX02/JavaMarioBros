@@ -17,7 +17,7 @@ public class Land extends GameObject{
 
 
 
-	public String getIcon() {
+	public String toString() {
 		
 		return Messages.LAND;
 		

@@ -3,28 +3,48 @@ package tp1.logic;
 import java.util.ArrayList;
 import java.util.List;
 
+import tp1.logic.gameobjects.GameObject;
 import tp1.logic.gameobjects.Land;
+import tp1.logic.gameobjects.Mario;
+import tp1.logic.gameobjects.Goomba;
+import tp1.logic.gameobjects.ExitDoor;
 
 public class Game {
 
 	public static final int DIM_X = 30;
 	public static final int DIM_Y = 15;
 	
-	private GameObjectContainer container;
-
+	private GameObjectContainer gameObjects;
+	private int nLevel;
+	private int remainingTime;
+	private Mario mario;
 
 	//TODO fill your code
 	
 	public Game(int nLevel) {
 		
-		
-		container = new Game
+		this.nLevel = nLevel;
+		initLevel0();
 	}
 	
 	public String positionToString(int col, int row) {
 		
 		
-		return " ";
+		// Variables
+		String element = " ";
+		Position box = new Position(col, row);
+		GameObject obj;
+		
+		
+	
+		obj = gameObjects.getObjFromPos(box);
+		
+		if (obj != null) {
+			element = obj.toString();
+		}
+	
+		// Si no hubiese coincidido con ninguna posici�n de los elementos del juego devolver�a " "
+		return element;
 	}
 
 	public boolean playerWins() {
@@ -53,7 +73,7 @@ public class Game {
 		return "TODO: Hola soy el game";
 	}
 	
-	/*
+	
 	private void initLevel0() {
 		this.nLevel = 0;
 		this.remainingTime = 100;
@@ -96,5 +116,5 @@ public class Game {
 
 		gameObjects.add(new Goomba(this, new Position(0, 19)));
 	}
-	*/
+	
 }
