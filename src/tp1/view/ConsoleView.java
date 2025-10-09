@@ -116,7 +116,7 @@ public class ConsoleView extends GameView {
 	private String endMessage() {
 		StringBuilder sb = new StringBuilder();
 		if(game.playerWins()) sb.append(Messages.MARIO_WINS);
-		else if (game.playerLoses()) sb.append(Messages.GAME_OVER);
+		//else if (game.playerLoses()) sb.append(Messages.GAME_OVER);
 		else sb.append(Messages.PLAYER_QUITS);
 		return sb.toString();
 	}

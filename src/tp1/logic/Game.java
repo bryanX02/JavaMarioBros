@@ -1,19 +1,30 @@
 package tp1.logic;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import tp1.logic.gameobjects.Land;
+
 public class Game {
 
 	public static final int DIM_X = 30;
 	public static final int DIM_Y = 15;
+	
+	private GameObjectContainer container;
+
 
 	//TODO fill your code
 	
 	public Game(int nLevel) {
-		// TODO Auto-generated constructor stub
+		
+		
+		container = new Game
 	}
 	
 	public String positionToString(int col, int row) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		
+		return " ";
 	}
 
 	public boolean playerWins() {
