@@ -95,4 +95,22 @@ public class GameObjectContainer {
 		
 	}
 
+
+	public void remove(Goomba goomba) {
+		goombaList.remove(goomba);
+		
+	}
+
+
+	public void update() {
+
+		// Primero Mario (para que sus acciones y colisiones se procesen antes).
+		mario.update();
+		// Después los Goombas.
+		for (Goomba goomba : goombaList) {
+			goomba.update();
+		}
+		
+	}
+
 }

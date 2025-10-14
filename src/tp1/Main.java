@@ -34,5 +34,12 @@ public class Main {
 		} catch (NumberFormatException e) {
 			System.out.println(String.format(Messages.LEVEL_NOT_A_NUMBER_ERROR, args[0]));
 		}
+		
+		/*
+		 * DUDAS
+		 * 
+		 * Cuando un objeto se mueve y debajo no tiene suelo, cae en el mismo turno?
+		 * Cuando un objeto se quiere mover y tiene a otro objeto en frente, se para cambiando su direccion, y se mueve en el mismo turno o el siguiente?
+		 */
 	}
 }

@@ -150,6 +150,11 @@ public class ConsoleView extends GameView {
 	public void showMessage(String message) {
 		System.out.println(message);
 	}
+	
+	@Override
+	public void showHelp() {
+		System.out.println(Messages.HELP);	
+	}
 
 	/**
 	 * Show prompt and request command.

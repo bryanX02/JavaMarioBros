@@ -10,4 +10,7 @@ public abstract class GameView implements ViewInterface{
 		this.game = game;
 	}
 	
+	
+	
+	
 }
