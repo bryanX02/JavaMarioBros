@@ -240,20 +240,31 @@ public class Game {
 	}
 	
 	/*
-	 * Para que todo funcione, también será necesario implementar el método public void update() en la clase Game.
-
-		Este método deberá:
+	 * Ejecución de acciones en Mario
+		En cada turno, las acciones del jugador se aplican antes del movimiento automático de Mario. El proceso en Mario.update() es:
 		
-		Llamar al método update() de la clase GameObjectContainer.
-		El contenedor, a su vez, llamará a los métodos update() de los objetos del tablero.
-		Es muy importante respetar el orden en que se actualizan los objetos, para que las pruebas no os den problemas:
+		Las acciones indicadas por el jugador se registran en una lista de acciones pendientes.
+		Cada acción se ejecuta secuencialmente, modificando la posición o el estado de Mario según corresponda. Esto permite encadenar varias acciones en un único ciclo, logrando movimientos más complejos (por ejemplo: RIGHT UP UP → Mario avanza y escala dos casillas).
+		La lista de acciones debe dejarse vacía para evitar su repetición en el siguiente turno.
+		Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento automático no se aplica. Si no se ha movido, Mario realiza su movimiento automático normal.
+		Coordinación desde el Game
+		El método Game.update() coordina el ciclo de juego, integrando las acciones de Mario y el movimiento automático de otros objetos. Los métodos implicados en Game son:
 		
-		Primero Mario (para que sus acciones y colisiones se procesen antes).
-		Después los Goombas.
-		De este modo se garantiza un comportamiento coherente en cada ciclo de juego.
+		public void addAction(Action act) → Añade una acción a la lista de acciones de Mario (invocado desde el controlador cuando el jugador introduce un comando).
+		public void update() → Ejecuta un ciclo completo del juego:
+		Llama a GameObjectContainer.update().
+		Este actualiza primero a Mario (Mario.update()) y luego al update de los enemigos (Goombas).
+		Por tanto, el método update() de Game debe actualizar el tiempo y solicitar al GameObjectContainer que realice una actualización de todos los objetos que tiene. Es decir Mario y Goombas.
 	 */
+	public void addAction(Action act) {
+		this.mario.addAction(act);
+	}
+	
+	// Por tanto, el método update() de Game debe actualizar el tiempo y solicitar al GameObjectContainer que realice una actualización de todos los objetos que tiene. Es decir Mario y Goombas.
 	public void update() {
 		
+		this.remainingTime--;
+		// Actualiza todos los objetos del juego (Mario y Goombas)
 		gameObjects.update();
 		
 		

@@ -90,33 +90,33 @@ Los comandos [a]ction [[R]IGHT | [L]EFT | [U]P | [D]OWN | [S]TOP]+ y [u]pdate | 
 							switch (command[i].toLowerCase()) {
 								case "r":
 								case "right":
-									//game.playerAction(Game.Action.RIGHT);
+									game.addAction(tp1.logic.Action.RIGHT);
 									break;
 								case "l":
 								case "left":
-									//game.playerAction(Game.Action.LEFT);
+									game.addAction(tp1.logic.Action.LEFT);
 									break;
 								case "u":
 								case "up":
-									//game.playerAction(Game.Action.UP);
+									game.addAction(tp1.logic.Action.UP);
 									break;
 								case "d":
 								case "down":
-									//game.playerAction(Game.Action.DOWN);
+									game.addAction(tp1.logic.Action.DOWN);
 									break;
 								case "s":
 								case "stop":
-									//game.playerAction(Game.Action.STOP);
+									game.addAction(tp1.logic.Action.STOP);
 									break;
 								default:
 									view.showError("Error: Unknown action: " + command[i]);
 									break;
-								}
+							}
 						}
-						//game.update();
 					} else {
 						view.showError("Error: No actions provided.");
 					}
+					game.update();
 					break;
 				case "u":
 				case "update":
