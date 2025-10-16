@@ -23,6 +23,21 @@ public enum Action {
 		return y;
 	}
 	
-	//TODO fill your code
+	public static Action parse(String input) {
+	    for (Action action : Action.values()) {
+	        if (action.name().equalsIgnoreCase(input)) {
+	            return action;
+	        }
+	    }
+	    // Comprobación de abreviaturas
+	    switch (input.toLowerCase()) {
+	        case "l": return LEFT;
+	        case "r": return RIGHT;
+	        case "u": return UP;
+	        case "d": return DOWN;
+	        case "s": return STOP;
+	        default: return null;
+	    }
+	}
 	
 }

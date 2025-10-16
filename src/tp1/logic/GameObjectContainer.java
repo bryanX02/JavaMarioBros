@@ -28,49 +28,47 @@ public class GameObjectContainer {
 	}
 	
 
-	// Funcion que devuelve el objeto de la lista que tenga la posici�n dada por par�metro
-	public GameObject getObjFromPos(Position pos) {
-		
-		// Variables
-		GameObject object = null;
-		boolean encontrado = false;
-		int i = 0;
-		
-		// Se busca el land en la posicion, si no lo encuentra se recibe un null
-		while (i < landList.size() && !encontrado) {
-			
-			if (landList.get(i).isOnPosition(pos))
-				encontrado = true;
-			else
-				i++;
+	/**
+	 * Devuelve una cadena con los iconos de TODOS los objetos en una posición.
+	 */
+	public String getObjectsToStringAt(Position pos) {
+		StringBuilder sb = new StringBuilder();
+
+		if (mario != null && mario.isOnPosition(pos)) {
+			sb.append(mario.toString());
 		}
-		
-		if (encontrado)
-			object = landList.get(i);
-		else {
-			
-			i=0;
-			while (i < goombaList.size() && !encontrado) {
-				
-				if (goombaList.get(i).isOnPosition(pos))
-					encontrado = true;
-				else
-					i++;
+		for (Goomba goomba : goombaList) {
+			if (goomba.isAlive() && goomba.isOnPosition(pos)) {
+				sb.append(goomba.toString());
 			}
-			
-			if (encontrado)
-				object = goombaList.get(i);
 		}
-		
-		if (mario.isOnPosition(pos))
-			object = mario;
-		else if (exit.isOnPosition(pos))
-			object = exit;
-		
-		
-		
-		return object;
-		
+		if (exit != null && exit.isOnPosition(pos)) {
+			sb.append(exit.toString());
+		}
+
+		// El suelo solo se añade si la celda está vacía de otros objetos
+		if (sb.length() == 0) {
+			for (Land land : landList) {
+				if (land.isOnPosition(pos)) {
+					sb.append(land.toString());
+					break; 
+				}
+			}
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Devuelve el primer objeto sólido (Land) en una posición.
+	 * Se usa para las comprobaciones de colisión.
+	 */
+	public GameObject getSolidObjectAt(Position pos) {
+		for (Land land : landList) {
+			if (land.isOnPosition(pos)) {
+				return land;
+			}
+		}
+		return null;
 	}
 	
 	// métodos sobrecargados que servirán para añadir los diferentes tipos de objeto al juego
@@ -96,12 +94,6 @@ public class GameObjectContainer {
 	}
 
 
-	public void remove(Goomba goomba) {
-		goombaList.remove(goomba);
-		
-	}
-
-
 //	El método marioExited() será el encargado de actualizar el estado de la partida, sumando a los puntos del jugador el valor resultante de la multiplicación entre el tiempo restante y 10. Además, marcará que la partida ha finalizado en victoria, mostrando por consola el mensaje Thanks, Mario! Your mission is complete..
 //
 //	La comprobación de esta interacción se realizará automáticamente en cada ciclo de actualización del juego, dentro de GameObjectContainer.update(). Para ello, será necesario recorrer todas las instancias de ExitDoor (en caso de existir varias; si solo hay una, se comprobará únicamente esa) y verificar si se produce la colisión con Mario.
@@ -118,15 +110,41 @@ public class GameObjectContainer {
 		// Actualiza a Mario
 		mario.update();
 		
-		// Comprueba si Mario est� en la puerta de salida
+		// Comprueba si Mario est� en la puerta de salida. No podemos usar 
 		if (!mario.interactWith(exit)) {
-			// Actualiza a los Goombas (no podemos usar foreach porque podemos eliminar goombas)
-			for (int i = 0; i < goombaList.size(); i++) {
-				goombaList.get(i).update();
-			}
+			// Actualiza a los Goombas
+			goombaList.forEach(g -> g.update());
 		}
 		
+		// Comprueba colisiones de Goombas con Mario (después de que los Goombas se muevan)
+		doInteractionsFrom(mario);
 		
+		// Elimina los Goombas muertos
+		cleanup();
+		
+	}
+	
+	/**
+	 * Realiza las interacciones de Mario con todos los Goombas
+	 */
+	public void doInteractionsFrom(Mario mario) {
+		for (Goomba goomba : goombaList) {
+			if (goomba.isAlive()) {
+				mario.interactWith(goomba);
+			}
+		}
+	}
+	
+	/**
+	 * Elimina los objetos muertos del contenedor.
+	 */
+	private void cleanup() {
+		goombaList.removeIf(g -> !g.isAlive());
+	}
+
+
+	public void remove(Goomba goomba) {
+		goombaList.remove(goomba);
 		
 	}
 

@@ -12,13 +12,19 @@ public class Mario extends GameObject implements MovableObject {
 	private Game game;
 	private Direction direction;;
 	private ActionList actions;
+	private Direction lastHorizontalDirection;
+	private boolean isBig;
+	private boolean isFalling;
 	
 	public Mario(Game game, Position pos) {
 		super();
 		this.game = game;
 		this.pos = pos;
 		this.direction = Direction.RIGHT;
+		this.lastHorizontalDirection = Direction.RIGHT;
 		this.actions = new ActionList();
+		this.isBig = true; // Mario empieza siendo grande
+		this.isFalling = false;
 	}
 
 
@@ -30,151 +36,140 @@ Cada acción se ejecuta secuencialmente, modificando la posición o el estado de
 La lista de acciones debe dejarse vacía para evitar su repetición en el siguiente turno.
 Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento automático no se aplica. Si no se ha movido, Mario realiza su movimiento automático normal.
 	 */
-	public void update() {
-		
-		
-		// Ejecuta las acciones en la lista de acciones pendientes
-		boolean hasMoved = false;
-		for (Action action : actions) {
-			switch (action) {
-			case LEFT:
-				this.direction = Direction.LEFT;
-				Position nextPosLeft = new Position(this.pos.getRow(), this.pos.getCol() - 1);
-				if (!game.solidObjectAt(nextPosLeft) && !nextPosLeft.isOnBorder()) {
-					this.pos = nextPosLeft;
-					hasMoved = true;
-				}
-				break;
-			case RIGHT:
-				this.direction = Direction.RIGHT;
-				Position nextPosRight = new Position(this.pos.getRow(), this.pos.getCol() + 1);
-				if (!game.solidObjectAt(nextPosRight) && !nextPosRight.isOnBorder()) {
-					this.pos = nextPosRight;
-					hasMoved = true;
-				}
-				break;
-			case UP:
-				Position nextPosUp = new Position(this.pos.getRow() - 1, this.pos.getCol());
-				if (!game.solidObjectAt(nextPosUp) && !nextPosUp.isOnBorder()) {
-					this.pos = nextPosUp;
-					hasMoved = true;
-				}
-				break;
-			case DOWN:
-				Position downPos = new Position(this.pos.getRow() + 1, this.pos.getCol());
-				if (!game.solidObjectDown(downPos)) {
-					do {
-						this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
-						downPos = new Position(this.pos.getRow() + 1, this.pos.getCol());
-					} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
-					if (this.pos.isOut()) {
-						game.marioDies();
-					}
-					hasMoved = true;
-				} else {
-					this.direction = Direction.STOP;
-				}
-				break;
-			case STOP:
-				this.direction = Direction.STOP;
-				break;
-			}
-		
-			
-		}
-		// Limpia la lista de acciones pendientes
-		this.actions.clear();
-		// Si no se ha movido, realiza su movimiento automático normal
-		if (!hasMoved) {
-			Position downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-			Position nextPos = new Position (this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
-			
-			
-			// Si se encuentra sobre un objeto sólido, avanza un paso por turno en la dirección actual (empieza moviéndose hacia la izquierda).
-			if (game.solidObjectAt(downPos)){
-				
-				// Si choca con un objeto sólido o con la pared lateral del tablero, invierte su dirección.
-				if (game.solidObjectAt(nextPos) || nextPos.isOnBorder()) {
-					this.direction = (this.direction == Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
-				}
-				this.pos = new Position(this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
-				
-			} else {
-				// Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
-				do {
-					this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
-					downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-				} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
-				// Si sale del tablero por abajo, muere.
-				if (this.pos.isOut()) {
-					game.marioDies();
-				}
-			}
-		}
-		
-		
-	}
-	
-	// FunciÃ³n que : devuelve el icono, 🧍, 🚶o 🧍, según su direcció
-	// Si Mario esta en up o down, el icono no cambia
-
-	public String getIcon() {
-	 
-		switch (this.direction) {
-		case LEFT:
-			return Messages.MARIO_LEFT;
-		case RIGHT:
-			return Messages.MARIO_RIGHT;
-		case UP:
-			if (this.direction == Direction.LEFT) {
-				return Messages.MARIO_LEFT;
-			} else if (this.direction == Direction.RIGHT) {
-				return Messages.MARIO_RIGHT;
-			} else {
-				return Messages.MARIO_STOP;
-			}
-		case DOWN:
-			if (this.direction == Direction.LEFT) {
-				return Messages.MARIO_LEFT;
-			} else if (this.direction == Direction.RIGHT) {
-				return Messages.MARIO_RIGHT;
-			} else {
-				return Messages.MARIO_STOP;
-			}
-		case STOP:
-			return Messages.MARIO_STOP;
-		default:
-			return Messages.MARIO_STOP;
-		}
-	}
- 
-	// Funcion que devuelve una representaciÃ³n de Mario
-	public String toString() {
-	
-		return Messages.MARIO_STOP;
-	}
-
 	@Override
-	public void changeDirection(int dir) {
-		
-		switch (dir) {
-		case 0:
-			this.direction = Direction.RIGHT;
-			break;
-		case 1:
-			this.direction = Direction.LEFT;
-			break;
-		case 2:
-			this.direction = Direction.UP;
-			break;
-		case 3:
-			this.direction = Direction.DOWN;
-			break;
-		case 4:
-			// STOP
-			break;
+	public void update() {
+	    boolean hasMovedByAction = false;
+	    this.isFalling = !game.solidObjectDown(this.pos);
+
+	    // 1. Ejecuta las acciones pendientes del jugador
+	    if (!actions.isEmpty()) {
+	        for (Action action : actions) {
+	            if (action == Action.DOWN) {
+	                if (!game.solidObjectDown(this.pos)) {
+	                    // La ACCIÓN de bajar sí usa el bucle para caer hasta el fondo
+	                	Position currentFallPos = this.pos;
+	                    while (!game.solidObjectDown(currentFallPos) && !currentFallPos.isOut()) {
+	                        currentFallPos = new Position(currentFallPos.getRow() + 1, currentFallPos.getCol());
+	                    }
+	                    this.pos = currentFallPos;
+	                    if (this.pos.isOut()) { game.marioDies(); return; }
+	                    hasMovedByAction = true;
+	                    game.doInteractionsFrom(this);
+	                } else {
+	                    this.direction = Direction.STOP;
+	                }
+	            } else {
+	                Position nextPos = this.pos;
+	                switch (action) {
+	                    case LEFT:
+	                        this.direction = Direction.LEFT;
+	                        this.lastHorizontalDirection = Direction.LEFT;
+	                        nextPos = new Position(this.pos.getRow(), this.pos.getCol() - 1);
+	                        break;
+	                    case RIGHT:
+	                        this.direction = Direction.RIGHT;
+	                        this.lastHorizontalDirection = Direction.RIGHT;
+	                        nextPos = new Position(this.pos.getRow(), this.pos.getCol() + 1);
+	                        break;
+	                    case UP:
+	                        Position headCheckPos = new Position(this.pos.getRow() - (isBig ? 2 : 1), this.pos.getCol());
+	                        if (!game.solidObjectAt(headCheckPos)) {
+	                            nextPos = new Position(this.pos.getRow() - 1, this.pos.getCol());
+	                        }
+	                        break;
+	                    case STOP:
+	                        this.direction = Direction.STOP;
+	                        break;
+	                }
+
+	                if (canMoveTo(nextPos)) {
+	                    this.pos = nextPos;
+	                    hasMovedByAction = true;
+	                    game.doInteractionsFrom(this);
+	                }
+	            }
+	        }
+	        actions.clear();
+	    }
+
+	    // 2. Aplica el movimiento automático (solo caída) si ninguna acción ha movido a Mario.
+	    if (!hasMovedByAction) {
+	        if (game.solidObjectDown(this.pos)) {
+	            
+	            // Movimiento horizontal automático si está sobre suelo firme
+	            if (direction != Direction.STOP) {
+	                int move = (direction == Direction.RIGHT) ? 1 : -1;
+	                Position nextPos = new Position(pos.getRow(), pos.getCol() + move);
+	                
+	                if (canMoveTo(nextPos)) {
+	                    this.pos = nextPos;
+	                    game.doInteractionsFrom(this);
+	                } else if (game.solidObjectAt(nextPos) || nextPos.isOut()) {
+	                    // Si choca, invierte la dirección
+	                    this.direction = (this.direction == Direction.RIGHT) ? Direction.LEFT : Direction.RIGHT;
+	                    this.lastHorizontalDirection = this.direction;
+	                }
+	            }
+	            
+	        } else {
+	            // Caída automática de una casilla
+	            this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
+	            if (pos.isOut()) {
+	                game.marioDies();
+	                return;
+	            }
+	            game.doInteractionsFrom(this);
+	        }
+	    }
+	}
+	
+	/**
+	 * Comprueba si Mario puede moverse a una nueva posición,
+	 * teniendo en cuenta si es grande.
+	 */
+	private boolean canMoveTo(Position newPos) {
+		if (newPos.equals(this.pos)) return false; // No es un movimiento
+
+		boolean canMove = !game.solidObjectAt(newPos);
+		if (isBig) {
+			Position newHeadPos = new Position(newPos.getRow() - 1, newPos.getCol());
+			canMove = canMove && !game.solidObjectAt(newHeadPos);
+		}
+		return canMove;
+	}
+	
+	public boolean isBig() {
+		return this.isBig;
+	}
+	
+	/**
+	 * Devuelve el icono de Mario según su dirección actual.
+	 */
+	public String getIcon() {
+		// Prioridad 1: Si la dirección es STOP, el icono siempre es el de parado.
+		if (this.direction == Direction.STOP) {
+			return Messages.MARIO_STOP;
 		}
 		
+		// Prioridad 2: Si se está moviendo activamente a la izquierda o derecha.
+		if (this.direction == Direction.LEFT) {
+			return Messages.MARIO_LEFT;
+		}
+		if (this.direction == Direction.RIGHT) {
+			return Messages.MARIO_RIGHT;
+		}
+		
+		// Fallback (para movimiento vertical): Se usa la última dirección horizontal guardada.
+		if (this.lastHorizontalDirection == Direction.LEFT) {
+			return Messages.MARIO_LEFT;
+		}
+		
+		// Por defecto, o si la última dirección fue derecha.
+		return Messages.MARIO_RIGHT;
+	}
+
+	public String toString() {
+		return getIcon();
 	}
 
 
@@ -191,11 +186,49 @@ Esta colisión se gestionará mediante el método de la clase Mario:
 Este método debe comprobar si Mario se encuentra en la misma posición que la puerta de salida y, en caso afirmativo, invocar al método de la clase Game: public void marioExited()
 	 */
 	public boolean interactWith(ExitDoor door) {
-		if (door.isOnPosition(this.pos)) {
+		Position headPos = isBig ? new Position(pos.getRow() - 1, pos.getCol()) : pos;
+		if (door.isOnPosition(this.pos) || door.isOnPosition(headPos)) {
 			game.marioExited();
 			return true;
 		}
 		return false;
 	}
+	
+	public boolean interactWith(Goomba goomba) {
+		Position headPos = isBig ? new Position(pos.getRow() - 1, pos.getCol()) : pos;
+
+		if (goomba.isOnPosition(pos) || goomba.isOnPosition(headPos)) {
+			if (isFalling) {
+				// Mario cae sobre el Goomba
+				game.addPoints(100);
+				goomba.receiveInteraction(this);
+			} else {
+				// Choque lateral
+				game.addPoints(100);
+				goomba.receiveInteraction(this); // El Goomba muere en cualquier caso de colisión
+				if (isBig) {
+					this.isBig = false;
+				} else {
+					game.marioDies();
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+
+
+	public void clearActions() {
+		this.actions.clear();
+		
+	}
+
+
+	public void setPosition(Position position) {
+		
+		this.pos = position;
+		
+	}
+
 
 }

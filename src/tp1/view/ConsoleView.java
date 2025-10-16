@@ -86,13 +86,12 @@ public class ConsoleView extends GameView {
 			str.append(VERTICAL_DELIMITER);
 
 			for (int col = 0; col < Game.DIM_X; col++) {
-				str.append(consoleCell(game.positionToString(col, row)));
-				//str.append(VERTICAL_DELIMITER);
+				// CORRECCIÓN: Se pasa (row, col) en el orden correcto
+				str.append(consoleCell(game.positionToString(row, col)));
 			}
 			str.append(VERTICAL_DELIMITER);
 			str.append( getRowName(row) );
 			str.append(NEW_LINE);
-			//str.append(ROW_BORDER);
 		}
 
 		str.append(LATERAL_TAB);
@@ -116,7 +115,7 @@ public class ConsoleView extends GameView {
 	private String endMessage() {
 		StringBuilder sb = new StringBuilder();
 		if(game.playerWins()) sb.append(Messages.MARIO_WINS);
-		//else if (game.playerLoses()) sb.append(Messages.GAME_OVER);
+		else if (game.playerLoses()) sb.append(Messages.GAME_OVER);
 		else sb.append(Messages.PLAYER_QUITS);
 		return sb.toString();
 	}

@@ -12,6 +12,9 @@ public class GameObject {
 		return this.pos.equals(pos);
 	}
 	
+	public Position clonePos() {
+		return new Position(pos.getRow(), pos.getCol());
+	}
 
 
 	public Position getPos() {

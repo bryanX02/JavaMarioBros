@@ -1,5 +1,6 @@
 package tp1.control;
 
+import tp1.logic.Action;
 import tp1.logic.Game;
 import tp1.view.GameView;
 import tp1.view.Messages;
@@ -47,103 +48,112 @@ Posteriormente, tenemos que añadir el comando reset[numLeve]. Se llevará a cab
 Los comandos [a]ction [[R]IGHT | [L]EFT | [U]P | [D]OWN | [S]TOP]+ y [u]pdate | "" se explicarán en las siguientes secciones.
 	 */
 	public void run() {
-		
-		
 		boolean exit = false;
-		
+		// Variable para controlar cuándo se debe pintar el tablero
+		boolean pintarTablero = true; 
+		boolean invalidAction = false;
+
 		view.showWelcome();
-		
+
 		do {
-			
-			view.showGame();
-			
+			// Solo pintamos el tablero si la variable de control es true
+			if (pintarTablero) {
+				view.showGame();
+			}
+			// Por defecto, no se repintará en el siguiente ciclo
+			pintarTablero = false; 
+
 			String[] command = view.getPrompt();
-			
+
+			// Comando como help, exit o reset no pueden tener parámetros adicionales. Se debe lanzar un error si los tienen
 			switch (command[0].toLowerCase()) {
 				case "h":
 				case "help":
-					view.showHelp();
+					if (command.length > 1) {
+						view.showError(Messages.COMMAND_INCORRECT_PARAMETER_NUMBER);
+						break;
+					} else 
+						view.showHelp();
 					break;
 				case "e":
 				case "exit":
-					view.showMessage("Player leaves game.");
-					exit = true;
+					if (command.length > 1) {
+						view.showError(Messages.COMMAND_INCORRECT_PARAMETER_NUMBER);
+						break;
+					}else {
+						view.showMessage(Messages.PLAYER_QUITS);
+						exit = true;
+					}
 					break;
 				case "r":
 				case "reset":
 					if (command.length > 1) {
 						try {
 							int level = Integer.parseInt(command[1]);
-							if (!game.reset(level)) {
-								view.showError("Error: No such level: " + level);
-							}
+							game.reset(level);
 						} catch (NumberFormatException e) {
-							view.showError("Error: Invalid level: " + command[1]);
+							view.showError(Messages.LEVEL_NOT_A_NUMBER_ERROR);
 						}
 					} else {
-						game.reset(0);
+						game.reset(game.getLevel()); // Resetea al nivel actual
 					}
+					// Un reset siempre repinta el tablero
+					pintarTablero = true;
 					break;
 				case "a":
 				case "action":
 					if (command.length > 1) {
 						for (int i = 1; i < command.length; i++) {
-							switch (command[i].toLowerCase()) {
-								case "r":
-								case "right":
-									game.addAction(tp1.logic.Action.RIGHT);
-									break;
-								case "l":
-								case "left":
-									game.addAction(tp1.logic.Action.LEFT);
-									break;
-								case "u":
-								case "up":
-									game.addAction(tp1.logic.Action.UP);
-									break;
-								case "d":
-								case "down":
-									game.addAction(tp1.logic.Action.DOWN);
-									break;
-								case "s":
-								case "stop":
-									game.addAction(tp1.logic.Action.STOP);
-									break;
-								default:
-									view.showError("Error: Unknown action: " + command[i]);
-									break;
+							Action action = Action.parse(command[i]);
+							if (action != null) {
+								game.addAction(action);
+								
+								
+							} else {
+								view.showError(Messages.UNKNOWN_ACTION.formatted(command[i]));
+								invalidAction = true;
 							}
 						}
+						
+						if (invalidAction) {
+							game.clearActions(); // Limpiamos las acciones si hubo alguna inválida
+						} 
+						game.update();
+						// El update solo se ejecuta si la acción es válida
+						
+						pintarTablero = true;
+						
 					} else {
-						view.showError("Error: No actions provided.");
+						view.showError(Messages.COMMAND_INCORRECT_PARAMETER_NUMBER);
+				
 					}
-					game.update();
 					break;
 				case "u":
 				case "update":
 				case "":
 					game.update();
+					// Un update siempre repinta el tablero
+					pintarTablero = true;
 					break;
 				default:
-					view.showError("Error: Unknown command: " + command[0]);
+					// Un comando desconocido no repinta el tablero
+					view.showError(Messages.UNKNOWN_COMMAND.formatted(command[0]));
 					break;
-			
 			}
-			
+
 			if (game.isFinished()) {
-				if (game.isVictory()) {
+				// Al finalizar, mostramos el tablero final una última vez
+				view.showGame(); 
+				if (game.playerWins()) {
 					view.showMessage(Messages.MARIO_WINS);
 				} else {
 					view.showMessage(Messages.GAME_OVER);
 				}
 				exit = true;
-				
 			}
-			
+
+			invalidAction = false;
 		} while (!exit);
-				
-			
-			
 	}
 
 }

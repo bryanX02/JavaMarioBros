@@ -9,19 +9,24 @@ public class Goomba extends GameObject implements MovableObject {
 	
 	private Game game;
 	private Direction direction;
+	private boolean alive;
 
 	public Goomba(Game game, Position pos) {
 		super();
 		this.game = game;
 		this.pos = pos;
 		this.direction = Direction.LEFT;
-		
+		this.alive = true;
 	}
 	
 	public String toString() {
 		
 		return Messages.GOOMBA;
 		
+	}
+	
+	public boolean isAlive() {
+		return alive;
 	}
 
 	/*El comportamiento de un Goomba es completamente automático:
@@ -30,53 +35,37 @@ public class Goomba extends GameObject implements MovableObject {
 	Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
 	Si sale del tablero por abajo, muere.
 	Cuando un Goomba muere, debe ser eliminado de la lista de Goombas.*/
-	
 	public void update() {
-		
-		
-		Position downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-		Position nextPos = new Position (this.pos.getRow(), this.pos.getCol());
-	
-		
-		// Si se encuentra sobre un objeto sólido, avanza un paso por turno en la dirección actual (empieza moviéndose hacia la izquierda).
-		if (game.solidObjectAt(downPos)){
-			
-			nextPos = new Position (this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
-			
-			// Si choca con un objeto sólido o con la pared lateral del tablero, invierte su dirección.
-			if (game.solidObjectAt(nextPos) || nextPos.isOnBorder()) {
-				if (this.direction == Direction.LEFT) {
-					this.direction = Direction.RIGHT;
-				} else {
-					this.direction = Direction.LEFT;
-				}
-				
-			}
-			this.pos = new Position (this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
-			
-		} else {
-			// Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
-			do {
-				this.pos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-				downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-			} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
-			
-			// Si sale del tablero por abajo, muere.
-			if (this.pos.isOut()) {
-				game.remove(this);
-			}
-			
-		}
-		
-	
-		
+	    if (!alive) return;
+
+	    if (game.solidObjectDown(this.pos)) {
+	        // Movimiento horizontal normal si hay suelo
+	        int moveDir = (this.direction == Direction.RIGHT) ? 1 : -1;
+	        Position nextPos = new Position(this.pos.getRow(), this.pos.getCol() + moveDir);
+	        
+	        if (game.solidObjectAt(nextPos) || nextPos.isOnBorder()) {
+	            this.direction = (this.direction == Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
+	        } else {
+	            this.pos = nextPos;
+	        }
+	        
+	    } else {
+	        // Caída automática: se mueve solo una casilla hacia abajo por turno.
+	        this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
+	        
+	        if (this.pos.isOut()) {
+	            this.alive = false;
+	        }
+	    }
 	}
-
-	@Override
-	public void changeDirection(int dir) {
-
-		
-		
+	
+	/**
+	 * Este método es llamado por Mario cuando hay una colisión.
+	 * Marca al Goomba como muerto.
+	 */
+	public boolean receiveInteraction(Mario mario) {
+		this.alive = false;
+		return true;
 	}
 	
 

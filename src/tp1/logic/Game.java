@@ -30,17 +30,7 @@ public class Game {
 		
 		this.nLevel = nLevel;
 		
-		switch(nLevel) {
-		
-		case 0: initLevel0(isReset);
-		break;
-		
-		case 1: initLevel1(isReset);
-		break;
-		
-		default: initLevel0(isReset);
-		
-		}
+		reset(nLevel);
 		
 	}
 	
@@ -50,33 +40,37 @@ public class Game {
 	
 
 	public String positionToString(int row, int col) {
+		Position pos = new Position(row, col);
 		
+		String cellContent = gameObjects.getObjectsToStringAt(pos);
 		
-		// Variables
-		String element = " ";
-		Position box = new Position(col, row);
-		GameObject obj;
-		
-		
-	
-		obj = gameObjects.getObjFromPos(box);
-		
-		if (obj != null) {
-			element = obj.toString();
+		// Lógica para la cabeza de Mario grande, comprobando si está fuera del tablero
+		if (mario != null && !mario.getPos().isOut() && mario.isBig()) {
+			Position headPos = new Position(mario.getPos().getRow() - 1, mario.getPos().getCol());
+			if (pos.equals(headPos)) {
+				cellContent += mario.toString();
+			}
 		}
-	
-		// Si no hubiese coincidido con ninguna posici�n de los elementos del juego devolver�a " "
-		return element;
+		
+		if (!cellContent.isEmpty()) {
+			return cellContent;
+		}
+
+		return " ";
 	}
 
 	public boolean playerWins() {
 		// TODO Auto-generated method stub
-		return false;
+		return victory;
+	}
+	public boolean playerLoses() {
+		// TODO Auto-generated method stub
+		return !victory && finished;
 	}
 
 	public int remainingTime() {
 		// TODO Auto-generated method stub
-		return 100;
+		return this.remainingTime;
 	}
 
 	public int points() {
@@ -95,9 +89,6 @@ public class Game {
 		return "TODO: Hola soy el game";
 	}
 	
-	public Boolean isVictory() {
-		return this.victory;
-	}
 	
 	private void initLevel0(Boolean isReset) {
 		this.nLevel = 0;
@@ -152,95 +143,38 @@ public class Game {
 	// (12,11), (12,14) y (0,19)
 	private void initLevel1(Boolean isReset) {
 
+		initLevel0(isReset);
 		this.nLevel = 1;
-		this.remainingTime = 100;
 		
-		if (!isReset) {
-			this.numPoints = 0;
-			this.numLives = 3;
-		}
-		
-		// 1. Mapa
-		gameObjects = new GameObjectContainer();
-		for(int col = 0; col < 15; col++) {
-			gameObjects.add(new Land(new Position(13,col)));
-			gameObjects.add(new Land(new Position(14,col)));		
-		}
-
-		gameObjects.add(new Land(new Position(Game.DIM_Y-3,9)));
-		gameObjects.add(new Land(new Position(Game.DIM_Y-3,12)));
-		for(int col = 17; col < Game.DIM_X; col++) {
-			gameObjects.add(new Land(new Position(Game.DIM_Y-2, col)));
-			gameObjects.add(new Land(new Position(Game.DIM_Y-1, col)));		
-		}
-
-		gameObjects.add(new Land(new Position(9,2)));
-		gameObjects.add(new Land(new Position(9,5)));
-		gameObjects.add(new Land(new Position(9,6)));
-		gameObjects.add(new Land(new Position(9,7)));
-		gameObjects.add(new Land(new Position(5,6)));
-		
-		// Salto final
-		int tamX = 8, tamY= 8;
-		int posIniX = Game.DIM_X-3-tamX, posIniY = Game.DIM_Y-3;
-		
-		for(int col = 0; col < tamX; col++) {
-			for (int fila = 0; fila < col+1; fila++) {
-				gameObjects.add(new Land(new Position(posIniY- fila, posIniX+ col)));
-			}
-		}
-
-		gameObjects.add(new ExitDoor(new Position(Game.DIM_Y-3, Game.DIM_X-1)));
-
-		// 3. Personajes
-		this.mario = new Mario(this, new Position(Game.DIM_Y-3, 0));
-		gameObjects.add(this.mario);
-
-		gameObjects.add(new Goomba(this, new Position(4,6)));
-		gameObjects.add(new Goomba(this, new Position(12,6)));
-		gameObjects.add(new Goomba(this, new Position(12,8)));
-		gameObjects.add(new Goomba(this, new Position(10,10)));
-		gameObjects.add(new Goomba(this, new Position(12,11)));
-		gameObjects.add(new Goomba(this, new Position(12,14)));
-		gameObjects.add(new Goomba(this, new Position(0,19)));
+		gameObjects.add(new Goomba(this, new Position(4, 6)));
+		gameObjects.add(new Goomba(this, new Position(12, 6)));
+		gameObjects.add(new Goomba(this, new Position(12, 8)));
+		gameObjects.add(new Goomba(this, new Position(10, 10)));
+		gameObjects.add(new Goomba(this, new Position(12, 11)));
+		gameObjects.add(new Goomba(this, new Position(12, 14)));
 		
 	
 	}
 	
 	/*Se llevará a cabo el reseteo de todo el tablero y del time, que también volverá a su valor inicial. No obstante, tanto el total de puntos como el número de vidas se mantienen igual que estaban (no sufren el efecto del comando). */
-	public boolean reset(int nLevel) {
+	public boolean reset(int level) {
+		boolean isAReset = (this.mario != null); // Es un reset si el juego ya estaba inicializado
 		
-		this.isReset = true;
-		
-		if (nLevel < 0) {
-			return false;
+		if (level == 0) {
+			initLevel0(isAReset);
+		} else if (level == 1) {
+			initLevel1(isAReset);
+		} else {
+			// Si el nivel no existe, se reinicia al nivel actual
+			reset(this.nLevel);
 		}
-		
-		switch(nLevel) {
-		
-		case 0: initLevel0(isReset);
-		break;
-		
-		case 1: initLevel1(isReset);
-		break;
-		
-		default: return false;
-		
-		}
-		
 		return true;
 	}
 	
 	public Boolean solidObjectDown(Position pos) {
 		
-		Position downPos = new Position (pos.getRow() + 1, pos.getCol());
-		GameObject objDown = gameObjects.getObjFromPos(downPos);
-		
-		if (objDown != null) {
-			return true;
-		}
-		
-		return false;
+		Position downPos = new Position(pos.getRow() + 1, pos.getCol());
+		return solidObjectAt(downPos);
 	}
 	
 	/*
@@ -270,18 +204,15 @@ public class Game {
 		this.remainingTime--;
 		// Actualiza todos los objetos del juego (Mario y Goombas)
 		gameObjects.update();
+		if (this.remainingTime <= 0) {
+			marioDies();
+		}
 		
 		
 	}
 
 	public boolean solidObjectAt(Position pos) {
-		GameObject objAt = gameObjects.getObjFromPos(pos);
-		
-		if (objAt != null) {
-			return true;
-		}
-		
-		return false;
+		return gameObjects.getSolidObjectAt(pos) instanceof Land;
 	}
 
 	public void remove(Goomba goomba) {
@@ -311,6 +242,24 @@ public class Game {
 		this.numPoints += this.remainingTime * 10;
 		this.finished = true;
 		this.victory = true;
+		
+	}
+	
+	public void addPoints(int points) {
+		this.numPoints += points;
+	}
+	
+	public void doInteractionsFrom(Mario mario) {
+		gameObjects.doInteractionsFrom(mario);
+	}
+
+
+	public int getLevel() {
+	    return this.nLevel;
+	}
+
+	public void clearActions() {
+		this.mario.clearActions();
 		
 	}
 	

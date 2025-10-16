@@ -21,58 +21,38 @@ public class ActionList extends ArrayList<Action> {
 //	LEFT/RIGHT: si aparecen ambas, se mantiene la primera y la otra se ignora. Se permiten repeticiones de la misma dirección (p.ej. RIGHT RIGHT mueve dos pasos a la derecha), pero las combinaciones opuestas respetan la primera ocurrencia y tienen un máximo de 4 ejecuciones por turno.
 //	UP/DOWN: si aparecen ambas, se mantiene la primera y la otra se ignora. Las acciones verticales (UP o DOWN) también tienen un máximo de 4 ejecuciones por turno; las adicionales se ignoran.
 
-	private int count;
 	private final int MAX_ACTIONS = 4;
 	
 	public ActionList() {
 		super();
-		count = 0;
 	}
 	
 	// LEFT/RIGHT: si aparecen ambas, se mantiene la primera y la otra se ignora. Se permiten repeticiones de la misma dirección (p.ej. RIGHT RIGHT mueve dos pasos a la derecha), pero las combinaciones opuestas respetan la primera ocurrencia y tienen un máximo de 4 ejecuciones por turno.
 	// UP/DOWN: si aparecen ambas, se mantiene la primera y la otra se ignora. Las acciones verticales (UP o DOWN) también tienen un máximo de 4 ejecuciones por turno; las adicionales se ignoran.
 	public void addAction (Action action) {
-		if (count < MAX_ACTIONS) {
-			if (action == Action.LEFT || action == Action.RIGHT) {
-				boolean hasOpposite = false;
-				for (int i = 0; i < count; i++) {
-					if ((this.get(i) == Action.LEFT && action == Action.RIGHT) ||
-						(this.get(i) == Action.RIGHT && action == Action.LEFT)) {
-						hasOpposite = true;
-						break;
-					}
-				}
-				if (!hasOpposite) {
-					this.add(action);
-				}
-			} else if (action == Action.UP || action == Action.DOWN) {
-				boolean hasOpposite = false;
-				for (int i = 0; i < count; i++) {
-					if ((this.get(i) == Action.UP && action == Action.DOWN) ||
-						(this.get(i) == Action.DOWN && action == Action.UP)) {
-						hasOpposite = true;
-						break;
-					}
-				}
-				if (!hasOpposite) {
-					this.add(action);
-				}
-			} else if (action == Action.STOP) {
-				this.add(action);
-			}
+		boolean canAdd = true;
+
+        // Se descarta si hay un movimiento opuesto ya en la lista
+		if (action == Action.LEFT && this.stream().anyMatch(a -> a == Action.RIGHT)) {
+			canAdd = false;
+		} else if (action == Action.RIGHT && this.stream().anyMatch(a -> a == Action.LEFT)) {
+			canAdd = false;
+		} else if (action == Action.UP && this.stream().anyMatch(a -> a == Action.DOWN)) {
+			canAdd = false;
+		} else if (action == Action.DOWN && this.stream().anyMatch(a -> a == Action.UP)) {
+			canAdd = false;
 		}
+
+        if (canAdd) {
+            long count = this.stream().filter(a -> a == action).count();
+            if (count < MAX_ACTIONS) {
+                this.add(action);
+            }
+        }
+        
 	}
 	
-	public ArrayList<Action> getActions() {
-		ArrayList<Action> result = new ArrayList<Action>();
-		System.arraycopy(this, 0, result, 0, count);
-		return result;
-	}
-	
-	public void clear() {
-		super.clear();
-		count = 0;
-	}
+
 	
 	
 	
