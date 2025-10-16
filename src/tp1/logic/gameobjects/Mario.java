@@ -35,31 +35,28 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 		
 		// Ejecuta las acciones en la lista de acciones pendientes
 		boolean hasMoved = false;
-		System.out.println("Acciones pendientes: " + actions);
 		for (Action action : actions) {
 			switch (action) {
 			case LEFT:
 				this.direction = Direction.LEFT;
-				Position nextPosLeft = new Position(this.pos.getRow(), this.pos.getCol());
-				nextPosLeft.move(this.direction);
+				Position nextPosLeft = new Position(this.pos.getRow(), this.pos.getCol() - 1);
 				if (!game.solidObjectAt(nextPosLeft) && !nextPosLeft.isOnBorder()) {
-					this.pos.move(this.direction);
+					this.pos = nextPosLeft;
 					hasMoved = true;
 				}
 				break;
 			case RIGHT:
 				this.direction = Direction.RIGHT;
-				Position nextPosRight = new Position(this.pos.getRow(), this.pos.getCol());
-				nextPosRight.move(this.direction);
+				Position nextPosRight = new Position(this.pos.getRow(), this.pos.getCol() + 1);
 				if (!game.solidObjectAt(nextPosRight) && !nextPosRight.isOnBorder()) {
-					this.pos.move(this.direction);
+					this.pos = nextPosRight;
 					hasMoved = true;
 				}
 				break;
 			case UP:
 				Position nextPosUp = new Position(this.pos.getRow() - 1, this.pos.getCol());
 				if (!game.solidObjectAt(nextPosUp) && !nextPosUp.isOnBorder()) {
-					this.pos.move(Direction.UP);
+					this.pos = nextPosUp;
 					hasMoved = true;
 				}
 				break;
@@ -67,7 +64,7 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 				Position downPos = new Position(this.pos.getRow() + 1, this.pos.getCol());
 				if (!game.solidObjectDown(downPos)) {
 					do {
-						this.pos.move(Direction.DOWN);
+						this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
 						downPos = new Position(this.pos.getRow() + 1, this.pos.getCol());
 					} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
 					if (this.pos.isOut()) {
@@ -86,34 +83,26 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 			
 		}
 		// Limpia la lista de acciones pendientes
-		actions.clear();
+		this.actions.clear();
 		// Si no se ha movido, realiza su movimiento automático normal
 		if (!hasMoved) {
 			Position downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-			Position nextPos = new Position (this.pos.getRow(), this.pos.getCol());
+			Position nextPos = new Position (this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
 			
 			
 			// Si se encuentra sobre un objeto sólido, avanza un paso por turno en la dirección actual (empieza moviéndose hacia la izquierda).
 			if (game.solidObjectAt(downPos)){
 				
-				nextPos.move(this.direction);
-				
 				// Si choca con un objeto sólido o con la pared lateral del tablero, invierte su dirección.
 				if (game.solidObjectAt(nextPos) || nextPos.isOnBorder()) {
-					if (this.direction == Direction.LEFT) {
-						this.direction = Direction.RIGHT;
-
-					} else if (this.direction == Direction.RIGHT) {
-						this.direction = Direction.LEFT;
-						
-					}
+					this.direction = (this.direction == Direction.LEFT) ? Direction.RIGHT : Direction.LEFT;
 				}
-				this.pos.move(this.direction);
+				this.pos = new Position(this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
 				
 			} else {
 				// Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
 				do {
-					this.pos.move(Direction.DOWN);
+					this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
 					downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
 				} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
 				// Si sale del tablero por abajo, muere.
@@ -122,41 +111,6 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 				}
 			}
 		}
-		
-		
-		/*Position downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-		Position nextPos = new Position (this.pos.getRow(), this.pos.getCol());
-		
-		
-		// Si se encuentra sobre un objeto sólido, avanza un paso por turno en la dirección actual (empieza moviéndose hacia la izquierda).
-		if (game.solidObjectAt(downPos)){
-			
-			nextPos.move(this.direction);
-			
-			// Si choca con un objeto sólido o con la pared lateral del tablero, invierte su dirección.
-			if (game.solidObjectAt(nextPos) || nextPos.isOnBorder()) {
-				if (this.direction == Direction.LEFT) {
-					this.direction = Direction.RIGHT;
-
-				} else {
-					this.direction = Direction.LEFT;
-					
-				}
-			}
-			this.pos.move(this.direction);
-			
-		} else {
-			// Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
-			do {
-				this.pos.move(Direction.DOWN);
-				downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
-			} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
-			// Si sale del tablero por abajo, muere.
-			if (this.pos.isOut()) {
-				game.marioDies();
-			}
-		}*/
-		
 		
 		
 	}
@@ -228,4 +182,20 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 		
 		this.actions.addAction(act);
 		
-	}}
+	}
+
+	/*
+	 * Una vez que conocemos cómo realizar movimientos y aplicar las acciones pedidas por comando, pasamos a analizar las colisiones entre objetos. En esta sección se tratará la colisión entre Mario y las puertas de salida (ExitDoor).
+
+Esta colisión se gestionará mediante el método de la clase Mario:
+Este método debe comprobar si Mario se encuentra en la misma posición que la puerta de salida y, en caso afirmativo, invocar al método de la clase Game: public void marioExited()
+	 */
+	public boolean interactWith(ExitDoor door) {
+		if (door.isOnPosition(this.pos)) {
+			game.marioExited();
+			return true;
+		}
+		return false;
+	}
+
+}

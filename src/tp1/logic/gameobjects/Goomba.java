@@ -41,7 +41,7 @@ public class Goomba extends GameObject implements MovableObject {
 		// Si se encuentra sobre un objeto sólido, avanza un paso por turno en la dirección actual (empieza moviéndose hacia la izquierda).
 		if (game.solidObjectAt(downPos)){
 			
-			nextPos.move(this.direction);
+			nextPos = new Position (this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
 			
 			// Si choca con un objeto sólido o con la pared lateral del tablero, invierte su dirección.
 			if (game.solidObjectAt(nextPos) || nextPos.isOnBorder()) {
@@ -52,12 +52,12 @@ public class Goomba extends GameObject implements MovableObject {
 				}
 				
 			}
-			this.pos.move(this.direction);
+			this.pos = new Position (this.pos.getRow(), this.pos.getCol() + (this.direction == Direction.RIGHT ? 1 : -1));
 			
 		} else {
 			// Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
 			do {
-				this.pos.move(Direction.DOWN);
+				this.pos = new Position (this.pos.getRow() + 1, this.pos.getCol());
 				downPos = new Position (this.pos.getRow() + 1, this.pos.getCol());
 			} while (!game.solidObjectDown(downPos) && !this.pos.isOut());
 			

@@ -102,14 +102,31 @@ public class GameObjectContainer {
 	}
 
 
+//	El método marioExited() será el encargado de actualizar el estado de la partida, sumando a los puntos del jugador el valor resultante de la multiplicación entre el tiempo restante y 10. Además, marcará que la partida ha finalizado en victoria, mostrando por consola el mensaje Thanks, Mario! Your mission is complete..
+//
+//	La comprobación de esta interacción se realizará automáticamente en cada ciclo de actualización del juego, dentro de GameObjectContainer.update(). Para ello, será necesario recorrer todas las instancias de ExitDoor (en caso de existir varias; si solo hay una, se comprobará únicamente esa) y verificar si se produce la colisión con Mario.
+//
+//	Ahora, el flujo del update de Game cambiaría ligeramente:
+//	GameObjectContainer.update()
+//    ├─> Mario.update() ──> ejecutar acciones y/o movimiento automático
+//    ├─> checkMarioinExit ──> comprobar si Mario colisiona con alguna puerta de salida
+//    └─> for g in Goombas:
+//           g.update() ──> movimiento automático y caída
 	public void update() {
-
-		// Primero Mario (para que sus acciones y colisiones se procesen antes).
+		
+		
+		// Actualiza a Mario
 		mario.update();
-		// Después los Goombas.
-		for (Goomba goomba : goombaList) {
-			goomba.update();
+		
+		// Comprueba si Mario est� en la puerta de salida
+		if (!mario.interactWith(exit)) {
+			// Actualiza a los Goombas (no podemos usar foreach porque podemos eliminar goombas)
+			for (int i = 0; i < goombaList.size(); i++) {
+				goombaList.get(i).update();
+			}
 		}
+		
+		
 		
 	}
 

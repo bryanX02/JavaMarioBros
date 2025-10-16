@@ -19,43 +19,21 @@ public class Position {
 		}
 
 		// Getters
-		public int getCol() {
-			return col;
+		
+		
+		// Metodo que clona la posicion
+		public Position clone() {
+			return new Position(row, col);
 		}
 
-		public void setCol(int col) {
-			this.col = col;
+		public int getCol() {
+			return col;
 		}
 
 		public int getRow() {
 			return row;
 		}
 
-		// Setters
-		public void setRow(int row) {
-			this.row = row;
-		}
-
-		
-		// M�todo que ejecuta el movimiento pasado por parametro
-		public void move(Direction dir) {
-
-			switch (dir) {
-			case UP:
-				this.row--;
-				break;
-			case DOWN:
-				this.row++;
-				break;
-			case LEFT:
-				this.col--;
-				break;
-			case RIGHT:
-				this.col++;
-				break;
-			}
-		
-		}
 
 		// Funci�n booleana respecto a si la posici�n esta en el borde del tablero
 		public boolean isOnBorder() {

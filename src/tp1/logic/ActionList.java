@@ -22,13 +22,15 @@ public class ActionList extends ArrayList<Action> {
 //	UP/DOWN: si aparecen ambas, se mantiene la primera y la otra se ignora. Las acciones verticales (UP o DOWN) también tienen un máximo de 4 ejecuciones por turno; las adicionales se ignoran.
 
 	private int count;
-	private final int MAX_ACTIONS = 10;
+	private final int MAX_ACTIONS = 4;
 	
 	public ActionList() {
 		super();
 		count = 0;
 	}
 	
+	// LEFT/RIGHT: si aparecen ambas, se mantiene la primera y la otra se ignora. Se permiten repeticiones de la misma dirección (p.ej. RIGHT RIGHT mueve dos pasos a la derecha), pero las combinaciones opuestas respetan la primera ocurrencia y tienen un máximo de 4 ejecuciones por turno.
+	// UP/DOWN: si aparecen ambas, se mantiene la primera y la otra se ignora. Las acciones verticales (UP o DOWN) también tienen un máximo de 4 ejecuciones por turno; las adicionales se ignoran.
 	public void addAction (Action action) {
 		if (count < MAX_ACTIONS) {
 			if (action == Action.LEFT || action == Action.RIGHT) {
@@ -68,6 +70,7 @@ public class ActionList extends ArrayList<Action> {
 	}
 	
 	public void clear() {
+		super.clear();
 		count = 0;
 	}
 	

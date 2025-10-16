@@ -22,6 +22,7 @@ public class Game {
 	private Boolean isReset = false;
 	private Mario mario;
 	private Boolean finished = false;
+	private Boolean victory = false;
 
 	//TODO fill your code
 	
@@ -94,6 +95,9 @@ public class Game {
 		return "TODO: Hola soy el game";
 	}
 	
+	public Boolean isVictory() {
+		return this.victory;
+	}
 	
 	private void initLevel0(Boolean isReset) {
 		this.nLevel = 0;
@@ -229,7 +233,7 @@ public class Game {
 	
 	public Boolean solidObjectDown(Position pos) {
 		
-		Position downPos = new Position (pos.getRow(), pos.getCol() + 1);
+		Position downPos = new Position (pos.getRow() + 1, pos.getCol());
 		GameObject objDown = gameObjects.getObjFromPos(downPos);
 		
 		if (objDown != null) {
@@ -296,10 +300,17 @@ public class Game {
 		
 		if (this.numLives == 0) {
 			this.finished = true;
-			System.out.println("Game Over");
 		} else {
 			reset(this.nLevel);
 		}
+		
+	}
+
+	// El método marioExited() será el encargado de actualizar el estado de la partida, sumando a los puntos del jugador el valor resultante de la multiplicación entre el tiempo restante y 10. Además, marcará que la partida ha finalizado en victoria, mostrando por consola el mensaje Thanks, Mario! Your mission is complete..
+	public void marioExited() {
+		this.numPoints += this.remainingTime * 10;
+		this.finished = true;
+		this.victory = true;
 		
 	}
 	

@@ -2,6 +2,7 @@ package tp1.control;
 
 import tp1.logic.Game;
 import tp1.view.GameView;
+import tp1.view.Messages;
 
 /**
  *  Accepts user input and coordinates the game execution logic
@@ -128,16 +129,16 @@ Los comandos [a]ction [[R]IGHT | [L]EFT | [U]P | [D]OWN | [S]TOP]+ y [u]pdate | 
 					break;
 			
 			}
-			/*if (game.isGameOver()) {
-				view.showGame(game);
-				if (game.playerWins()) {
-					view.showMessage("Player wins!");
+			
+			if (game.isFinished()) {
+				if (game.isVictory()) {
+					view.showMessage(Messages.MARIO_WINS);
 				} else {
-					view.showMessage("Game over!");
+					view.showMessage(Messages.GAME_OVER);
 				}
-				exit = true;	
+				exit = true;
 				
-			}*/
+			}
 			
 		} while (!exit);
 				
