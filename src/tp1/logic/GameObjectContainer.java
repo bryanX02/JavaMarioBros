@@ -2,150 +2,104 @@ package tp1.logic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import tp1.logic.gameobjects.ExitDoor;
 import tp1.logic.gameobjects.GameObject;
-import tp1.logic.gameobjects.Goomba;
-import tp1.logic.gameobjects.Land;
 import tp1.logic.gameobjects.Mario;
 
 public class GameObjectContainer {
 	
-
-	// Atributos
-	private List<Land> landList;
-	private List<Goomba> goombaList;
-	private ExitDoor exit;
-	private Mario mario;
-	
+	// Una única lista para todos los objetos
+	private List<GameObject> gameObjects;
 	
 	public GameObjectContainer() {
-		super();
-		this.landList = new ArrayList();
-		this.goombaList = new ArrayList();
-		this.exit = null;
-		this.mario = null;
+		gameObjects = new ArrayList<>();
+	}
+
+	// Método 'add' único
+	public void add(GameObject obj) {
+		gameObjects.add(obj);
 	}
 	
-
-	/**
-	 * Devuelve una cadena con los iconos de TODOS los objetos en una posición.
-	 */
 	public String getObjectsToStringAt(Position pos) {
-		StringBuilder sb = new StringBuilder();
-
-		if (mario != null && mario.isOnPosition(pos)) {
-			sb.append(mario.toString());
-		}
-		for (Goomba goomba : goombaList) {
-			if (goomba.isAlive() && goomba.isOnPosition(pos)) {
-				sb.append(goomba.toString());
-			}
-		}
-		if (exit != null && exit.isOnPosition(pos)) {
-			sb.append(exit.toString());
-		}
-
-		// El suelo solo se añade si la celda está vacía de otros objetos
-		if (sb.length() == 0) {
-			for (Land land : landList) {
-				if (land.isOnPosition(pos)) {
-					sb.append(land.toString());
-					break; 
-				}
-			}
-		}
-		return sb.toString();
+		// Filtra la lista de gameObjects y une sus 'toString'
+		String cellContent = gameObjects.stream()
+            .filter(obj -> obj.isOnPosition(pos) && obj.isAlive())
+            .map(GameObject::toString)
+            .collect(Collectors.joining("")); // Une los iconos
+		
+		
+		return cellContent;
 	}
 
 	/**
-	 * Devuelve el primer objeto sólido (Land) en una posición.
-	 * Se usa para las comprobaciones de colisión.
+	 * Devuelve el primer objeto sólido en una posición.
+	 * Ahora usa el método polimórfico isSolid()
 	 */
 	public GameObject getSolidObjectAt(Position pos) {
-		for (Land land : landList) {
-			if (land.isOnPosition(pos)) {
-				return land;
+		for (GameObject obj : gameObjects) {
+			if (obj.isAlive() && obj.isOnPosition(pos) && obj.isSolid()) {
+				return obj;
 			}
 		}
 		return null;
 	}
 	
-	// métodos sobrecargados que servirán para añadir los diferentes tipos de objeto al juego
-	public void add(Land land) {
-		
-		landList.add(land);
-		
-	}
-	public void add(Goomba goomba) {
-		
-		goombaList.add(goomba);
-		
-	}
-	public void add(ExitDoor exit) {
-		
-		this.exit = exit;
-		
-	}
-	public void add(Mario mario) {
-		
-		this.mario = mario;
-		
-	}
-
-
-//	El método marioExited() será el encargado de actualizar el estado de la partida, sumando a los puntos del jugador el valor resultante de la multiplicación entre el tiempo restante y 10. Además, marcará que la partida ha finalizado en victoria, mostrando por consola el mensaje Thanks, Mario! Your mission is complete..
-//
-//	La comprobación de esta interacción se realizará automáticamente en cada ciclo de actualización del juego, dentro de GameObjectContainer.update(). Para ello, será necesario recorrer todas las instancias de ExitDoor (en caso de existir varias; si solo hay una, se comprobará únicamente esa) y verificar si se produce la colisión con Mario.
-//
-//	Ahora, el flujo del update de Game cambiaría ligeramente:
-//	GameObjectContainer.update()
-//    ├─> Mario.update() ──> ejecutar acciones y/o movimiento automático
-//    ├─> checkMarioinExit ──> comprobar si Mario colisiona con alguna puerta de salida
-//    └─> for g in Goombas:
-//           g.update() ──> movimiento automático y caída
-	public void update() {
-		
-		
-		// Actualiza a Mario
-		mario.update();
-		
-		// Comprueba si Mario est� en la puerta de salida. No podemos usar 
-		if (!mario.interactWith(exit)) {
-			// Actualiza a los Goombas
-			goombaList.forEach(g -> g.update());
+	private GameObject getMario() {
+		for (GameObject obj : gameObjects) {
+			// Tenemos que encontrar a Mario
+			if (obj instanceof Mario) {
+				return obj;
+			}
 		}
-		
-		// Comprueba colisiones de Goombas con Mario (después de que los Goombas se muevan)
-		doInteractionsFrom(mario);
-		
-		// Elimina los Goombas muertos
-		cleanup();
-		
+		return null;
 	}
 	
 	/**
-	 * Realiza las interacciones de Mario con todos los Goombas
+	 * Bucle de actualización polimórfico
+	 */
+	public void update() {
+		// 1. Actualiza todos los objetos
+		for (GameObject obj : gameObjects) {
+			if (obj.isAlive()) {
+				obj.update();
+			}
+		}
+		
+		// 2. Realiza interacciones (usando la lógica de P1)
+		Mario mario = (Mario)getMario();
+		if (mario != null && mario.isAlive()) {
+			doInteractionsFrom(mario);
+		}
+		
+		// 3. Limpia objetos muertos
+		cleanup();
+	}
+	
+	/**
+	 * Realiza interacciones polimórficas (Double-Dispatch)
 	 */
 	public void doInteractionsFrom(Mario mario) {
-		for (Goomba goomba : goombaList) {
-			if (goomba.isAlive()) {
-				mario.interactWith(goomba);
+		for (GameObject obj : gameObjects) {
+			if (obj.isAlive() && obj != mario) {
+				// 1. Mario comprueba si choca con obj
+				// 1. Mario (collider) comprueba si choca con obj (collidee)
+	            // Llama a obj.receiveInteraction(mario)
+	            mario.interactWith(obj); 
+	            
+	            // 2. Obj (collidee) comprueba si choca con Mario (collider)
+	            // Llama a mario.receiveInteraction(obj)
+	            obj.interactWith(mario);
 			}
 		}
 	}
 	
-	/**
-	 * Elimina los objetos muertos del contenedor.
-	 */
 	private void cleanup() {
-		goombaList.removeIf(g -> !g.isAlive());
+		// Elimina objetos muertos de la lista
+		gameObjects.removeIf(obj -> !obj.isAlive());
 	}
 
-
-	public void remove(Goomba goomba) {
-		goombaList.remove(goomba);
-		
+	public void remove(GameObject obj) {
+		gameObjects.remove(obj);
 	}
-
 }

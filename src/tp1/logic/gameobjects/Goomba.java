@@ -5,18 +5,11 @@ import tp1.logic.Game;
 import tp1.logic.Position;
 import tp1.view.Messages;
 
-public class Goomba extends GameObject implements MovableObject {
+public class Goomba extends MovingObject {
 	
-	private Game game;
-	private Direction direction;
-	private boolean alive;
-
 	public Goomba(Game game, Position pos) {
-		super();
-		this.game = game;
-		this.pos = pos;
-		this.direction = Direction.LEFT;
-		this.alive = true;
+		super(game, pos);
+		super.direction = Direction.LEFT;
 	}
 	
 	public String toString() {
@@ -25,9 +18,6 @@ public class Goomba extends GameObject implements MovableObject {
 		
 	}
 	
-	public boolean isAlive() {
-		return alive;
-	}
 
 	/*El comportamiento de un Goomba es completamente automático:
 	Si se encuentra sobre un objeto sólido, avanza un paso por turno en la dirección actual (empieza moviéndose hacia la izquierda).
@@ -35,8 +25,9 @@ public class Goomba extends GameObject implements MovableObject {
 	Si no tiene suelo debajo, cae una casilla hacia abajo hasta volver a encontrarse con un objeto sólido.
 	Si sale del tablero por abajo, muere.
 	Cuando un Goomba muere, debe ser eliminado de la lista de Goombas.*/
+	@Override
 	public void update() {
-	    if (!alive) return;
+		if (!isAlive()) return;
 
 	    if (game.solidObjectDown(this.pos)) {
 	        // Movimiento horizontal normal si hay suelo
@@ -54,17 +45,28 @@ public class Goomba extends GameObject implements MovableObject {
 	        this.pos = new Position(this.pos.getRow() + 1, this.pos.getCol());
 	        
 	        if (this.pos.isOut()) {
-	            this.alive = false;
+	            this.die();
 	        }
 	    }
+	}
+	
+	@Override
+	public boolean interactWith(GameItem other) {
+		// Goomba inicia la interacción (si choca con algo)
+		if (other.isOnPosition(pos)) {
+			return other.receiveInteraction(this);
+		}
+		return false;
 	}
 	
 	/**
 	 * Este método es llamado por Mario cuando hay una colisión.
 	 * Marca al Goomba como muerto.
 	 */
+	@Override
 	public boolean receiveInteraction(Mario mario) {
-		this.alive = false;
+		// La lógica de P1 es que Goomba siempre muere
+		this.die();
 		return true;
 	}
 	

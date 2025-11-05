@@ -19,11 +19,11 @@ public class Game {
 	private int remainingTime;
 	private int numPoints;
 	private int numLives;
-	private Boolean isReset = false;
 	private Mario mario;
 	private Boolean finished = false;
 	private Boolean victory = false;
-
+	private boolean playerQuits = false;
+	
 	//TODO fill your code
 	
 	public Game(int nLevel) {
@@ -38,19 +38,25 @@ public class Game {
 		return finished;
 	}
 	
+	/**
+	 * Llamado por ExitCommand para finalizar el juego.
+	 */
+	public void exit() {
+	    this.playerQuits = true;
+	    this.finished = true; // Usamos el flag 'finished' existente
+	}
+	
+	/**
+	 * Comprueba si el jugador ha salido (para el mensaje final).
+	 */
+	public boolean isExit() {
+	    return this.playerQuits;
+	}
 
 	public String positionToString(int row, int col) {
 		Position pos = new Position(row, col);
 		
 		String cellContent = gameObjects.getObjectsToStringAt(pos);
-		
-		// Lógica para la cabeza de Mario grande, comprobando si está fuera del tablero
-		if (mario != null && !mario.getPos().isOut() && mario.isBig()) {
-			Position headPos = new Position(mario.getPos().getRow() - 1, mario.getPos().getCol());
-			if (pos.equals(headPos)) {
-				cellContent += mario.toString();
-			}
-		}
 		
 		if (!cellContent.isEmpty()) {
 			return cellContent;
@@ -64,8 +70,8 @@ public class Game {
 		return victory;
 	}
 	public boolean playerLoses() {
-		// TODO Auto-generated method stub
-		return !victory && finished;
+		// El jugador pierde si el juego acaba, no ganó Y no salió
+	    return finished && !victory && !playerQuits;
 	}
 
 	public int remainingTime() {
@@ -103,22 +109,22 @@ public class Game {
 		// 1. Mapa
 		gameObjects = new GameObjectContainer();
 		for(int col = 0; col < 15; col++) {
-			gameObjects.add(new Land(new Position(13,col)));
-			gameObjects.add(new Land(new Position(14,col)));		
+			gameObjects.add(new Land(this, new Position(13,col)));
+			gameObjects.add(new Land(this, new Position(14,col)));		
 		}
 
-		gameObjects.add(new Land(new Position(Game.DIM_Y-3,9)));
-		gameObjects.add(new Land(new Position(Game.DIM_Y-3,12)));
+		gameObjects.add(new Land(this, new Position(Game.DIM_Y-3,9)));
+		gameObjects.add(new Land(this, new Position(Game.DIM_Y-3,12)));
 		for(int col = 17; col < Game.DIM_X; col++) {
-			gameObjects.add(new Land(new Position(Game.DIM_Y-2, col)));
-			gameObjects.add(new Land(new Position(Game.DIM_Y-1, col)));		
+			gameObjects.add(new Land(this, new Position(Game.DIM_Y-2, col)));
+			gameObjects.add(new Land(this, new Position(Game.DIM_Y-1, col)));		
 		}
 
-		gameObjects.add(new Land(new Position(9,2)));
-		gameObjects.add(new Land(new Position(9,5)));
-		gameObjects.add(new Land(new Position(9,6)));
-		gameObjects.add(new Land(new Position(9,7)));
-		gameObjects.add(new Land(new Position(5,6)));
+		gameObjects.add(new Land(this, new Position(9,2)));
+		gameObjects.add(new Land(this, new Position(9,5)));
+		gameObjects.add(new Land(this, new Position(9,6)));
+		gameObjects.add(new Land(this, new Position(9,7)));
+		gameObjects.add(new Land(this, new Position(5,6)));
 		
 		// Salto final
 		int tamX = 8, tamY= 8;
@@ -126,11 +132,11 @@ public class Game {
 		
 		for(int col = 0; col < tamX; col++) {
 			for (int fila = 0; fila < col+1; fila++) {
-				gameObjects.add(new Land(new Position(posIniY- fila, posIniX+ col)));
+				gameObjects.add(new Land(this, new Position(posIniY- fila, posIniX+ col)));
 			}
 		}
 
-		gameObjects.add(new ExitDoor(new Position(Game.DIM_Y-3, Game.DIM_X-1)));
+		gameObjects.add(new ExitDoor(this, new Position(Game.DIM_Y-3, Game.DIM_X-1)));
 
 		// 3. Personajes
 		this.mario = new Mario(this, new Position(Game.DIM_Y-3, 0));
@@ -166,7 +172,7 @@ public class Game {
 			initLevel1(isAReset);
 		} else {
 			// Si el nivel no existe, se reinicia al nivel actual
-			reset(this.nLevel);
+			return false;
 		}
 		return true;
 	}
@@ -204,7 +210,7 @@ public class Game {
 		this.remainingTime--;
 		// Actualiza todos los objetos del juego (Mario y Goombas)
 		gameObjects.update();
-		if (this.remainingTime <= 0) {
+		if (this.remainingTime <= 0 && !this.isFinished()) {
 			marioDies();
 		}
 		
@@ -212,13 +218,11 @@ public class Game {
 	}
 
 	public boolean solidObjectAt(Position pos) {
-		return gameObjects.getSolidObjectAt(pos) instanceof Land;
+		return gameObjects.getSolidObjectAt(pos) != null;
 	}
 
-	public void remove(Goomba goomba) {
-		
-		gameObjects.remove(goomba);
-		
+	public void remove(GameObject obj) {
+		gameObjects.remove(obj);
 	}
 
 	/*
@@ -240,6 +244,7 @@ public class Game {
 	// El método marioExited() será el encargado de actualizar el estado de la partida, sumando a los puntos del jugador el valor resultante de la multiplicación entre el tiempo restante y 10. Además, marcará que la partida ha finalizado en victoria, mostrando por consola el mensaje Thanks, Mario! Your mission is complete..
 	public void marioExited() {
 		this.numPoints += this.remainingTime * 10;
+		this.remainingTime = 0;
 		this.finished = true;
 		this.victory = true;
 		

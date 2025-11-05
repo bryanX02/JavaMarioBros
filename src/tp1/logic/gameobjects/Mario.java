@@ -7,23 +7,18 @@ import tp1.logic.Game;
 import tp1.logic.Position;
 import tp1.view.Messages;
 
-public class Mario extends GameObject implements MovableObject {
+public class Mario extends MovingObject {
 
-	private Game game;
-	private Direction direction;;
 	private ActionList actions;
 	private Direction lastHorizontalDirection;
 	private boolean isBig;
-	private boolean isFalling;
 	
 	public Mario(Game game, Position pos) {
-		super();
-		this.game = game;
-		this.pos = pos;
+		super(game, pos);
 		this.direction = Direction.RIGHT;
 		this.lastHorizontalDirection = Direction.RIGHT;
 		this.actions = new ActionList();
-		this.isBig = true; // Mario empieza siendo grande
+		this.isBig = true;
 		this.isFalling = false;
 	}
 
@@ -130,9 +125,14 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 	private boolean canMoveTo(Position newPos) {
 		if (newPos.equals(this.pos)) return false; // No es un movimiento
 
+	    if (newPos.isOut()) return false; // Comprueba si los pies están fuera
+	    
 		boolean canMove = !game.solidObjectAt(newPos);
 		if (isBig) {
 			Position newHeadPos = new Position(newPos.getRow() - 1, newPos.getCol());
+			
+			if (newHeadPos.isOut()) return false; // Comprueba si la cabeza está fuera
+			
 			canMove = canMove && !game.solidObjectAt(newHeadPos);
 		}
 		return canMove;
@@ -141,7 +141,9 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 	public boolean isBig() {
 		return this.isBig;
 	}
-	
+	public boolean isFalling() { 
+		return this.isFalling; 
+	}
 	/**
 	 * Devuelve el icono de Mario según su dirección actual.
 	 */
@@ -179,48 +181,71 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 		
 	}
 
-	/*
-	 * Una vez que conocemos cómo realizar movimientos y aplicar las acciones pedidas por comando, pasamos a analizar las colisiones entre objetos. En esta sección se tratará la colisión entre Mario y las puertas de salida (ExitDoor).
-
-Esta colisión se gestionará mediante el método de la clase Mario:
-Este método debe comprobar si Mario se encuentra en la misma posición que la puerta de salida y, en caso afirmativo, invocar al método de la clase Game: public void marioExited()
-	 */
-	public boolean interactWith(ExitDoor door) {
+	@Override
+	public boolean interactWith(GameItem other) {
+		// Mario (el jugador) inicia las interacciones
 		Position headPos = isBig ? new Position(pos.getRow() - 1, pos.getCol()) : pos;
-		if (door.isOnPosition(this.pos) || door.isOnPosition(headPos)) {
-			game.marioExited();
-			return true;
+		
+		// Comprueba si los pies O la cabeza de Mario están en la posición del 'other'
+		if (other.isOnPosition(this.pos) || (isBig && other.isOnPosition(headPos))) {
+			 return other.receiveInteraction(this);
 		}
 		return false;
 	}
 	
-	public boolean interactWith(Goomba goomba) {
-		Position headPos = isBig ? new Position(pos.getRow() - 1, pos.getCol()) : pos;
-
-		if (goomba.isOnPosition(pos) || goomba.isOnPosition(headPos)) {
-			if (isFalling) {
-				// Mario cae sobre el Goomba
-				game.addPoints(100);
-				goomba.receiveInteraction(this);
-			} else {
-				// Choque lateral
-				game.addPoints(100);
-				goomba.receiveInteraction(this); // El Goomba muere en cualquier caso de colisión
-				if (isBig) {
-					this.isBig = false;
-				} else {
-					game.marioDies();
-				}
-			}
-			return true;
-		}
-		return false;
+	/**
+	 * Llamado por ExitDoor (via double-dispatch) cuando Mario
+	 * interactúa con la puerta.
+	 * (Lógica de P1 de interactWith(ExitDoor))
+	 */
+	@Override
+	public boolean receiveInteraction(ExitDoor door) {
+		game.marioExited();
+		return true;
 	}
-
+	
+	/**
+	 * Llamado por Goomba (via double-dispatch) cuando Mario
+	 * interactúa con un Goomba.
+	 * (Lógica de P1 de interactWith(Goomba))
+	 */
+	@Override
+	public boolean receiveInteraction(Goomba goomba) {
+		if (isFalling) {
+			// Mario cae sobre el Goomba
+			game.addPoints(100);
+			goomba.die();
+		} else {
+			// Choque lateral
+			game.addPoints(100);
+			goomba.die();
+			if (isBig) {
+				this.isBig = false;
+			} else {
+				game.marioDies();
+			}
+			// (Mantenemos la lógica de P1: no invertimos dirección en el choque)
+		}
+		return true;
+	}
 
 	public void clearActions() {
 		this.actions.clear();
 		
+	}
+	
+	@Override
+	public boolean isOnPosition(Position pos) {
+	    // Comprueba si la posición coincide con los pies
+	    if (this.pos.equals(pos)) {
+	        return true;
+	    }
+	    // Si es grande, comprueba también la cabeza
+	    if (isBig && !this.pos.isOut()) {
+	        Position headPos = new Position(this.pos.getRow() - 1, this.pos.getCol());
+	        return headPos.equals(pos);
+	    }
+	    return false;
 	}
 
 
