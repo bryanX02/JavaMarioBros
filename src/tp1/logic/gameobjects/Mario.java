@@ -4,6 +4,7 @@ import tp1.logic.Action;
 import tp1.logic.ActionList;
 import tp1.logic.Direction;
 import tp1.logic.Game;
+import tp1.logic.GameWorld;
 import tp1.logic.Position;
 import tp1.view.Messages;
 
@@ -13,7 +14,7 @@ public class Mario extends MovingObject {
 	private Direction lastHorizontalDirection;
 	private boolean isBig;
 	
-	public Mario(Game game, Position pos) {
+	public Mario(GameWorld game, Position pos) {
 		super(game, pos);
 		this.direction = Direction.RIGHT;
 		this.lastHorizontalDirection = Direction.RIGHT;

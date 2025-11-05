@@ -6,6 +6,7 @@ import java.util.List;
 
 import tp1.logic.Action;
 import tp1.logic.Game;
+import tp1.logic.GameModel;
 import tp1.view.GameView;
 import tp1.view.Messages;
 
@@ -28,7 +29,7 @@ public class ActionCommand extends AbstractCommand {
 	}
 
 	@Override
-	public void execute(Game game, GameView view) {
+	public void execute(GameModel game, GameView view) {
 		// Replicamos la lógica del P1 Controller
 		if (actionStrings == null || actionStrings.isEmpty()) {
 			view.showError(Messages.COMMAND_INCORRECT_PARAMETER_NUMBER);

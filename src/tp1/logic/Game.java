@@ -9,7 +9,7 @@ import tp1.logic.gameobjects.Mario;
 import tp1.logic.gameobjects.Goomba;
 import tp1.logic.gameobjects.ExitDoor;
 
-public class Game {
+public class Game implements GameModel, GameStatus, GameWorld {
 
 	public static final int DIM_X = 30;
 	public static final int DIM_Y = 15;
@@ -177,7 +177,7 @@ public class Game {
 		return true;
 	}
 	
-	public Boolean solidObjectDown(Position pos) {
+	public boolean solidObjectDown(Position pos) {
 		
 		Position downPos = new Position(pos.getRow() + 1, pos.getCol());
 		return solidObjectAt(downPos);

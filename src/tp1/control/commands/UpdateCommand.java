@@ -1,6 +1,7 @@
 package tp1.control.commands;
 
 import tp1.logic.Game;
+import tp1.logic.GameModel;
 import tp1.view.GameView;
 
 public class UpdateCommand extends NoParamsCommand {
@@ -15,7 +16,7 @@ public class UpdateCommand extends NoParamsCommand {
 	}
 
 	@Override
-	public void execute(Game game, GameView view) {
+	public void execute(GameModel game, GameView view) {
 		game.update();
 		view.showGame(); // Repintamos el tablero
 	}

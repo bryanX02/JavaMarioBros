@@ -1,6 +1,7 @@
 package tp1.control.commands;
 
 import tp1.logic.Game;
+import tp1.logic.GameModel;
 import tp1.view.GameView;
 import tp1.view.Messages;
 
@@ -29,6 +30,8 @@ public abstract class AbstractCommand implements Command {
 			   getName().equalsIgnoreCase(name);
 	}
 
+	public abstract void execute(GameModel game, GameView view);
+	
 	@Override
 	public String helpText(){
 		return Messages.LINE_TAB.formatted(Messages.COMMAND_HELP_TEXT.formatted(getDetails(), getHelp()));

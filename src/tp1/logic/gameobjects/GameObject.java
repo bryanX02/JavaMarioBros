@@ -1,16 +1,17 @@
 package tp1.logic.gameobjects;
 
 import tp1.logic.Game;
+import tp1.logic.GameWorld;
 import tp1.logic.Position;
 
 
 public abstract class GameObject implements GameItem {
 	
 	protected Position pos;
-	protected Game game;
+	protected GameWorld game;
 	private boolean isAlive;
 
-	public GameObject(Game game, Position pos) {
+	public GameObject(GameWorld game, Position pos) {
 		this.game = game;
 		this.pos = pos;
 		this.isAlive = true;
