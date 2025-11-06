@@ -3,7 +3,6 @@ package tp1.view;
 import static tp1.util.MyStringUtils.center;
 import static tp1.util.MyStringUtils.repeat;
 
-import tp1.logic.Game;
 import tp1.logic.GameStatus;
 import tp1.util.MyStringUtils;
 

@@ -1,10 +1,9 @@
 package tp1.logic.gameobjects;
 
-import tp1.logic.Game;
 import tp1.logic.GameWorld;
 import tp1.logic.Position;
 
-
+// Clase base para todos los objetos del juego.
 public abstract class GameObject implements GameItem {
 	
 	protected Position pos;

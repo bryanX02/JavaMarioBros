@@ -32,10 +32,10 @@ public class Main {
             GameModel modelGame = game;
             GameStatus statusGame = game;
             
-            // 3. Mantenemos tu lógica de colores, pero pasamos la interfaz GameStatus
+            // ahora pasamos la interfaz GameStatus
             GameView view = args.length > 1 ? new ConsoleView(statusGame) : new ConsoleColorsView(statusGame);
             
-            // 4. Pasamos la interfaz GameModel al controlador
+            // y la interfaz GameModel al controlador
             Controller controller = new Controller(modelGame, view);
 					
 			controller.run();
@@ -47,8 +47,7 @@ public class Main {
 		/*
 		 * DUDAS
 		 * 
-		 * Cuando un objeto se mueve y debajo no tiene suelo, cae en el mismo turno?
-		 * Cuando un objeto se quiere mover y tiene a otro objeto en frente, se para cambiando su direccion, y se mueve en el mismo turno o el siguiente?
+		 * Sigo sin entender el fallo del test 06. Creo que el expected es incorrecto.
 		 */
 	}
 }

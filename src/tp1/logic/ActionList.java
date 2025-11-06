@@ -2,6 +2,7 @@ package tp1.logic;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("serial")
 public class ActionList extends ArrayList<Action> {
 	
 	

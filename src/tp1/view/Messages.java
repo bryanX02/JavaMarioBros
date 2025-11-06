@@ -1,4 +1,3 @@
-
 package tp1.view;
 
 import tp1.util.MyStringUtils;

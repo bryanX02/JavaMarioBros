@@ -1,7 +1,5 @@
 package tp1.logic;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import tp1.logic.gameobjects.GameObject;
 import tp1.logic.gameobjects.Land;
@@ -24,7 +22,6 @@ public class Game implements GameModel, GameStatus, GameWorld {
 	private Boolean victory = false;
 	private boolean playerQuits = false;
 	
-	//TODO fill your code
 	
 	public Game(int nLevel) {
 		
@@ -127,6 +124,7 @@ public class Game implements GameModel, GameStatus, GameWorld {
 		gameObjects.add(new Land(this, new Position(5,6)));
 		
 		// Salto final
+		@SuppressWarnings("unused")
 		int tamX = 8, tamY= 8;
 		int posIniX = Game.DIM_X-3-tamX, posIniY = Game.DIM_Y-3;
 		

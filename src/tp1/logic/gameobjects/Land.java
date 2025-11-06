@@ -1,11 +1,10 @@
 package tp1.logic.gameobjects;
 
-import tp1.logic.Game;
 import tp1.logic.GameWorld;
 import tp1.logic.Position;
 import tp1.view.Messages;
 
-//
+// Clase Land que representa el terreno sólido en el juego
 public class Land extends GameObject {
 	
 	public Land(GameWorld game, Position pos) {

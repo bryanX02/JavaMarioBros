@@ -3,7 +3,6 @@ package tp1.logic.gameobjects;
 import tp1.logic.Action;
 import tp1.logic.ActionList;
 import tp1.logic.Direction;
-import tp1.logic.Game;
 import tp1.logic.GameWorld;
 import tp1.logic.Position;
 import tp1.view.Messages;
@@ -76,6 +75,8 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 	                    case STOP:
 	                        this.direction = Direction.STOP;
 	                        break;
+					default:
+						break;
 	                }
 
 	                if (canMoveTo(nextPos)) {
@@ -225,7 +226,6 @@ Si alguna acción ha cambiado la posición de Mario en ese turno, el movimiento 
 			} else {
 				game.marioDies();
 			}
-			// (Mantenemos la lógica de P1: no invertimos dirección en el choque)
 		}
 		return true;
 	}

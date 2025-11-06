@@ -2,6 +2,7 @@ package tp1.logic.gameobjects;
 
 import tp1.logic.Position;
 
+// Interfaz que representa un objeto del juego
 public interface GameItem {
 	
 	public boolean isSolid();
